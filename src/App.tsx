@@ -3,10 +3,11 @@ import AuthLayout from "./components/auth-screen/login";
 import LoginForm from "./components/auth-screen/login";
 import DashboardLayout from "./components/Layout/dashboard-layout";
 import Dashboard from "./screens/dashboard";
+import Users from "./screens/users";
+import Cards from "./screens/cards"; // ✅ Make sure this exists
 import { useAuthStore } from "@/store/auth-store";
 import { useEffect } from "react";
 import ProtectedRoute from "./components/protect-route";
-import Users from "./screens/users";
 
 function App() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
@@ -14,23 +15,23 @@ function App() {
   useEffect(() => {
     checkAuth();
   }, []);
-  return (
-    <>
-      <Routes>
-        {/* Auth Route */}
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<LoginForm />} />
-        </Route>
 
-        {/* Dashboard route */}
-        <Route element={<ProtectedRoute roles={["admin", "super_admin"]} />}>
-          <Route element={<DashboardLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/users" element={<Users />} />
-          </Route>
+  return (
+    <Routes>
+      {/* Auth Route */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<LoginForm />} />
+      </Route>
+
+      {/* Dashboard route */}
+      <Route element={<ProtectedRoute roles={["admin", "super_admin"]} />}>
+        <Route element={<DashboardLayout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/cards" element={<Cards />} /> {/* ✅ Added */}
         </Route>
-      </Routes>
-    </>
+      </Route>
+    </Routes>
   );
 }
 

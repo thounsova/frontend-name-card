@@ -53,6 +53,7 @@ const secondaryItems = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const newLocal = <UserNav />;
   return (
     <Sidebar>
       <SidebarHeader className="border-b px-6 py-4">
@@ -100,7 +101,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="border-t p-4">
-        <UserNav />
+        {newLocal}
       </SidebarFooter>
     </Sidebar>
   );

@@ -1,4 +1,5 @@
 export interface ICard {
+  user: any;
   id: string;
   card_name: string;
   card_number: string;

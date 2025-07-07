@@ -8,6 +8,7 @@ import Cards from "./screens/cards"; // ✅ Make sure this exists
 import { useAuthStore } from "@/store/auth-store";
 import { useEffect } from "react";
 import ProtectedRoute from "./components/protect-route";
+import Profile from "./screens/profile";
 
 function App() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
@@ -28,6 +29,7 @@ function App() {
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/cards" element={<Cards />} /> {/* ✅ Added */}
         </Route>
       </Route>

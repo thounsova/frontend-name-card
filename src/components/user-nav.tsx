@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link } from "react-router";
 
 export function UserNav() {
   return (
@@ -40,8 +41,10 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
+          <Link to="/profile" className="flex items-center gap-2">
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem>
           <Settings className="mr-2 h-4 w-4" />

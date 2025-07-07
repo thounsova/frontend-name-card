@@ -8,6 +8,7 @@ export type CardQueryParams = {
   sortOrder: "ASC" | "DESC";
   is_deleted?: boolean;
   title?: string;
+  email?: string;
 };
 
 export const requestCard = () => {
@@ -18,30 +19,45 @@ export const requestCard = () => {
     sortOrder,
     is_deleted = false,
     title,
+    email,
   }: CardQueryParams): Promise<ICardResponse> => {
-    const params = new URLSearchParams({
-      page: String(page),
-      limit: String(pageSize), // verify if backend expects `limit`
-      sortBy,
-      sortOrder,
-      is_deleted: String(is_deleted),
-    });
+    let url = `/card/get-cards-by-admin?page=${page}&limit=${pageSize}&sortBy=${sortBy}&sortOrder=${sortOrder}&is_deleted=${is_deleted}`;
 
     if (title) {
-      params.append("title", title);
+      url += `&title=${encodeURIComponent(title)}`;
     }
 
-    const url = `/card/get-cards-by-admin?${params.toString()}`;
+    if (email) {
+      url += `&email=${encodeURIComponent(email)}`;
+    }
 
-    // Here, assume `request` returns a Promise<any> or Promise<{ cards: ICardResponse }>
-    const response: { cards: ICardResponse } = await request({
-      url,
-      method: "GET",
-    });
-
-    // Return the nested cards object which has { data, meta }
-    return response.cards;
+    try {
+      const response: { cards: ICardResponse } = await request({
+        url,
+        method: "GET",
+      });
+      return response.cards;
+    } catch (error) {
+      console.error("Failed to fetch cards:", error);
+      throw error;
+    }
   };
 
-  return { GET_CARDS };
+  const UPDATE_CARD = async (id: string, status: boolean) => {
+    return await request({
+      url: `/card/update-card/${id}`,
+      method: "PUT",
+      data: { is_active: status },
+    });
+  };
+
+  // DELETE CARD
+  const DELETE_CARD = async (id: string) => {
+    return await request({
+      url: `/api/v1/card/delete-card-by-admin/${id}`, // <-- your API path here
+      method: "DELETE",
+    });
+  };
+
+  return { GET_CARDS, UPDATE_CARD, DELETE_CARD };
 };

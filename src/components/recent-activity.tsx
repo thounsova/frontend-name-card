@@ -1,49 +1,87 @@
+import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDashboardStore } from "@/store/dashboard-store";
-import { Badge } from "./ui/badge";
+import { Badge } from "@/components/ui/badge";
+import { useUserStatusDialog } from "@/store/user-status-dialog-store";
 
-export function RecentActivity() {
-  const recentUsers = useDashboardStore((state) => state.recentUsers);
-  if (!recentUsers) {
-    return "Loading recent users";
-  }
-  return (
-    <Card className="col-span-3">
-      <CardHeader>
-        <CardTitle>Recent Users</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-8">
-          {recentUsers.map((user, index) => (
-            <div key={index} className="flex items-center">
-              <Avatar className="h-9 w-9">
-                <AvatarImage
-                  src={user.avatar || "/placeholder.svg"}
-                  alt="Avatar"
-                />
-                <AvatarFallback>
-                  {user.full_name.substring(0, 2)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="ml-4 space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {user.full_name}
-                </p>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
-              </div>
-              <div className="ml-auto font-small">
-                {" "}
+export interface User {
+  id: string;
+  full_name: string;
+  email: string;
+  avatar?: string | null;
+  is_active: boolean;
+}
+
+interface RecentActivityProps {
+  recentUsers: User[] | null;
+}
+
+export const RecentActivity = React.memo(
+  ({ recentUsers }: RecentActivityProps) => {
+    const { setDialog } = useUserStatusDialog();
+
+    if (!recentUsers)
+      return (
+        <div className="text-muted-foreground">Loading recent users...</div>
+      );
+
+    return (
+      <Card className="col-span-3" aria-label="Recent Users">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-gray-800">
+            Recent Users
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {recentUsers.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center justify-between rounded-lg p-3 hover:bg-muted transition"
+                role="listitem"
+              >
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={user.avatar ?? "/placeholder.svg"}
+                      alt={user.full_name ?? "User avatar"}
+                    />
+                    <AvatarFallback>
+                      {user.full_name?.slice(0, 2).toUpperCase() ?? "NA"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium text-gray-900">
+                      {user.full_name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
                 <Badge
-                  variant={user.is_active === true ? "default" : "destructive"}
+                  variant={user.is_active ? "default" : "destructive"}
+                  className="cursor-pointer text-xs px-2 py-1 hover:opacity-80"
+                  onClick={() => setDialog(user.id, user.is_active)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ")
+                      setDialog(user.id, user.is_active);
+                  }}
+                  aria-pressed={user.is_active}
+                  aria-label={`${user.full_name} is currently ${
+                    user.is_active ? "active" : "blocked"
+                  }. Click to toggle status.`}
                 >
-                  {user.is_active ? "active" : "block"}
+                  {user.is_active ? "Active" : "Blocked"}
                 </Badge>
               </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+);
+RecentActivity.displayName = "RecentActivity";

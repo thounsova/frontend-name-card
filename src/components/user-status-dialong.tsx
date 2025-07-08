@@ -1,4 +1,3 @@
-// components/dialogs/UserStatusAlertDialog.tsx
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,12 +15,15 @@ interface Props {
   isLoading?: boolean;
 }
 
-const UserStatusAlertDialog = ({ onConfirm, isLoading = false }: Props) => {
+export default function UserStatusAlertDialog({
+  onConfirm,
+  isLoading = false,
+}: Props) {
   const { open, userId, currentStatus, reset, setOpen } = useUserStatusDialog();
 
   const handleConfirm = () => {
     if (userId && currentStatus !== null) {
-      onConfirm(userId, !currentStatus); // toggle status
+      onConfirm(userId, !currentStatus);
       reset();
     }
   };
@@ -35,7 +37,7 @@ const UserStatusAlertDialog = ({ onConfirm, isLoading = false }: Props) => {
           </AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to {currentStatus ? "block" : "unblock"} this
-            user? This action can be reversed later.
+            user? You can undo this later.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -47,6 +49,4 @@ const UserStatusAlertDialog = ({ onConfirm, isLoading = false }: Props) => {
       </AlertDialogContent>
     </AlertDialog>
   );
-};
-
-export default UserStatusAlertDialog;
+}

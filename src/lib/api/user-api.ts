@@ -33,9 +33,19 @@ export const requestUser = () => {
       },
     });
   };
+  
+
+   const DELETE_USER = async (id: string) => {
+    return await request({
+      url: `/user/delete-user/${id}`,
+      method: "DELETE",
+    });
+  };
+
 
   return {
     USERS,
     UPDATE_USER,
+    DELETE_USER,
   };
 };

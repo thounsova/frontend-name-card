@@ -6,7 +6,7 @@ type UserQueryParams = {
   pageSize: number;
   sortBy: string;
   sortOrder: string;
-  email: object;
+  email: string; 
 };
 
 export const requestUser = () => {
@@ -33,19 +33,29 @@ export const requestUser = () => {
       },
     });
   };
-  
 
-   const DELETE_USER = async (id: string) => {
+  const UPDATE_USER_DETAIL = async (
+    id: string,
+    data: { full_name: string; user_name: string; email: string }
+  ) => {
+    return await request({
+      url: `/user/update-user/${id}`, 
+      method: "PUT", 
+      data,
+    });
+  };
+
+  const DELETE_USER = async (id: string) => {
     return await request({
       url: `/user/delete-user/${id}`,
       method: "DELETE",
     });
   };
 
-
   return {
     USERS,
     UPDATE_USER,
+    UPDATE_USER_DETAIL,  
     DELETE_USER,
   };
 };

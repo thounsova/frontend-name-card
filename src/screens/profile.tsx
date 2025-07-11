@@ -1,45 +1,43 @@
-// src/components/Profile.tsx
-import React, { useEffect, useState } from "react";
-import { requestProfile } from "../lib/api/profile-api";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
+import { requestProfile } from "@/lib/api/profile-api";
 
-const Profile: React.FC = () => {
-  const { PROFILE } = requestProfile();
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const queryClient = new QueryClient();
 
-  useEffect(() => {
-    PROFILE()
-      .then((data) => {
-        setProfile(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError("Failed to load profile");
-        setLoading(false);
-      });
-  }, []);
+function Profile() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: requestProfile,
+  });
 
-  if (loading) return <div>Loading profile...</div>;
-  if (error) return <div>{error}</div>;
-
+  if (isLoading) return <p>Loading profile...</p>;
+  if (error) return <p>Error loading profile</p>;
   return (
-    <div className="max-w-md mx-auto mt-10 bg-white shadow-lg rounded-xl p-6">
-      <div className="flex flex-col items-center">
-        <div className="w-24 h-24 mb-4 rounded-full bg-gray-200 flex items-center justify-center text-3xl text-white font-bold">
-          <img
-            src="https://cdn2.iconfinder.com/data/icons/circle-avatars-1/128/050_girl_avatar_profile_woman_suit_student_officer-512.png"
-            alt=""
-          />
-        </div>
-        <h1 className="text-2xl font-semibold text-gray-800">
-          {profile.full_name}
+    <div className="flex   gap-4 p-4 border border-gray-300 rounded-md max-w-md">
+      <img
+        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwiVqpNd0zv349lznWpZI0-KKoEyp-sFiA_g&s"
+        alt="User Avatar"
+        className="w-20 h-20 rounded-full object-cover border-2 border-gray-400"
+      />
+      <div>
+        <h1 className="text-xl font-semibold text-gray-900 mb-2">
+          Name: {data?.user_name || "No name"}
         </h1>
-        <p className="text-gray-600 mt-1">Email: {profile.email}</p>
-        {/* Add more profile fields here as needed */}
+        <p className="text-gray-600">Email: {data?.email || "No email"}</p>
       </div>
     </div>
   );
-};
+}
 
-export default Profile;
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <Profile />
+      </div>
+    </QueryClientProvider>
+  );
+}

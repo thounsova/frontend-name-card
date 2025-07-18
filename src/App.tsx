@@ -14,8 +14,10 @@ function App() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    checkAuth(); // Automatically run on load/refresh
+    console.log(checkAuth());
+    console.log("wroking");
+  }, [checkAuth]);
 
   return (
     <Routes>

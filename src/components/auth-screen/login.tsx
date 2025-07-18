@@ -26,6 +26,8 @@ import {
   FormMessage,
 } from "../ui/form";
 import { LogIn } from "lucide-react";
+import Cookies from "js-cookie";
+import { CookieName } from "@/types";
 
 const loginSchema = z.object({
   user_name: z.string().min(2, "Username is required"),
@@ -54,11 +56,11 @@ const LoginForm = () => {
       console.log(existUser, data?.data);
 
       if (accessToken && refreshToken) {
-        setTokens(accessToken, refreshToken, roles);
+        setTokens(roles);
 
         // Redirect based on role
         if (roles.includes("admin") || roles.includes("super_admin")) {
-          navigate("/");
+          navigate("/users");
         } else {
           navigate("/login");
         }
@@ -72,7 +74,8 @@ const LoginForm = () => {
   const onSubmit = (data: z.infer<typeof loginSchema>) => {
     loginMutation.mutate(data);
   };
-
+ const access = Cookies.get(CookieName.ACCESS_TOKEN);
+  console.log(access, "dsfafdsaf");
   return (
     <Card className="mx-auto w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm">
       <CardHeader className="text-center space-y-4 pb-6">

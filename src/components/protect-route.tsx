@@ -8,10 +8,14 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ roles = [] }: ProtectedRouteProps) => {
   const location = useLocation();
-  const { isAuthenticated, roles: userRoles } = useAuthStore();
+  const { isAuthenticated, roles: userRoles, accessToken } = useAuthStore();
+
+  console.log(isAuthenticated, accessToken);
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    console.log("/login");
+    console.log(accessToken);
+    // return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // ✅ If roles are needed but not yet loaded, skip rendering until ready

@@ -1,22 +1,25 @@
 // import { create } from "zustand";
 // import { devtools } from "zustand/middleware";
-// import { clearTokens } from "@/lib/cookie";
 // import Cookies from "js-cookie";
+// import { clearTokens } from "@/lib/cookie";
 // import { CookieName } from "@/types";
+// import { jwtDecode } from "jwt-decode";
+
+// interface JwtPayload {
+//   roles: string[];
+// }
 
 // interface AuthState {
 //   accessToken: string | null;
 //   refreshToken: string | null;
 //   isAuthenticated: boolean;
 //   roles: string[];
-//   // hasCheckedAuth: boolean;
 //   setTokens: (
-//     accessToken: string,
-//     refreshToken: string,
+//     // accessToken: string,
+//     // refreshToken: string,
 //     roles: string[]
 //   ) => void;
 //   checkAuth: () => void;
-
 //   logout: () => void;
 // }
 
@@ -27,47 +30,74 @@
 //       refreshToken: null,
 //       isAuthenticated: !!Cookies.get(CookieName.ACCESS_TOKEN),
 //       roles: [],
-//       // hasCheckedAuth: false,
 
-//       // ✅ Called after login
-//       setTokens: (accessToken, refreshToken) =>
+//       /**
+//        * ✅ Called after successful login
+//        */
+//       setTokens: (roles) => {
+//         // Cookies.set(CookieName.ACCESS_TOKEN, accessToken);
+//         // Cookies.set(CookieName.REFRESH_TOKEN, refreshToken);
+
 //         set(
 //           {
-//             accessToken,
-//             refreshToken,
+//             // accessToken,
+//             // refreshToken,
+//             roles,
 //             isAuthenticated: true,
-//             roles: [],
 //           },
 //           false,
 //           "auth/setTokens"
-//         ),
+//         );
+//       },
 
-//       // ✅ Called on app init (reload/refresh)
-//       checkAuth: () => {
+//       /**
+//        * ✅ Called on app load or refresh to rehydrate from cookies
+//        */
+//       checkAuth: async () => {
 //         const access = Cookies.get(CookieName.ACCESS_TOKEN);
 //         const refresh = Cookies.get(CookieName.REFRESH_TOKEN);
 
-//         if (access && refresh) {
-//           set(
-//             {
-//               accessToken: access,
-//               refreshToken: refresh,
-//               // hasCheckedAuth: true,
-//               isAuthenticated: true,
+//         const isAuth = !!access && !!refresh;
+
+//         if (isAuth) {
+//           let roles = [];
+//           const decoded = jwtDecode<JwtPayload>(access);
+//           roles = decoded.roles || [];
+
+//           try {
+//             set(
+//               {
+//                 accessToken: access || null,
+//                 refreshToken: refresh || null,
+//                 isAuthenticated: isAuth,
+//                 roles, // 🚨 You can fetch user profile if needed to restore roles here
+//               },
+//               false,
+//               "auth/checkAuth"
+//             );
+//             // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//           } catch (error) {
+//             console.error("Failed to fetch profile");
+//             set({
+//               accessToken: null,
+//               refreshToken: null,
+//               isAuthenticated: false,
 //               roles: [],
-//             },
-//             false,
-//             "auth/restore"
-//           );
+//             });
+//           }
 //         } else {
-//           set(
-//             { accessToken: null, refreshToken: null, isAuthenticated: false },
-//             false,
-//             "auth/clear"
-//           );
+//           set({
+//             accessToken: null,
+//             refreshToken: null,
+//             isAuthenticated: false,
+//             roles: [],
+//           });
 //         }
 //       },
 
+//       /**
+//        * Clears state + cookies and redirects
+//        */
 //       logout: () => {
 //         clearTokens();
 //         set(
@@ -75,17 +105,19 @@
 //             accessToken: null,
 //             refreshToken: null,
 //             isAuthenticated: false,
-//             // hasCheckedAuth: true,
+//             roles: [],
 //           },
 //           false,
 //           "auth/logout"
 //         );
-//         window.location.href = "/login";
+//         // window.location.href = "/login";
 //       },
 //     }),
 //     { name: "AuthStore" }
 //   )
 // );
+
+// src/store/auth-store.ts
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import Cookies from "js-cookie";
@@ -102,11 +134,8 @@ interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   roles: string[];
-  setTokens: (
-    accessToken: string,
-    refreshToken: string,
-    roles: string[]
-  ) => void;
+  hydrated: boolean; // ✅ to check if auth is loaded
+  setTokens: (roles: string[]) => void;
   checkAuth: () => void;
   logout: () => void;
 }
@@ -116,20 +145,13 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       accessToken: null,
       refreshToken: null,
-      isAuthenticated: !!Cookies.get(CookieName.ACCESS_TOKEN),
+      isAuthenticated: false,
       roles: [],
+      hydrated: false,
 
-      /**
-       * ✅ Called after successful login
-       */
-      setTokens: (accessToken, refreshToken, roles) => {
-        Cookies.set(CookieName.ACCESS_TOKEN, accessToken);
-        Cookies.set(CookieName.REFRESH_TOKEN, refreshToken);
-
+      setTokens: (roles) => {
         set(
           {
-            accessToken,
-            refreshToken,
             roles,
             isAuthenticated: true,
           },
@@ -138,39 +160,36 @@ export const useAuthStore = create<AuthState>()(
         );
       },
 
-      /**
-       * ✅ Called on app load or refresh to rehydrate from cookies
-       */
-      checkAuth: async () => {
+      checkAuth: () => {
         const access = Cookies.get(CookieName.ACCESS_TOKEN);
         const refresh = Cookies.get(CookieName.REFRESH_TOKEN);
-
+        console.log(access, "===access===");
         const isAuth = !!access && !!refresh;
 
         if (isAuth) {
-          let roles = [];
-          const decoded = jwtDecode<JwtPayload>(access);
-          roles = decoded.roles || [];
-
           try {
+            const decoded = jwtDecode<JwtPayload>(access!);
+            const roles = decoded.roles || [];
+
             set(
               {
-                accessToken: access || null,
-                refreshToken: refresh || null,
-                isAuthenticated: isAuth,
-                roles, // 🚨 You can fetch user profile if needed to restore roles here
+                accessToken: access,
+                refreshToken: refresh,
+                isAuthenticated: true,
+                roles,
+                hydrated: true,
               },
               false,
               "auth/checkAuth"
             );
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (error) {
-            console.error("Failed to fetch profile");
+            console.error("JWT decode failed", error);
             set({
               accessToken: null,
               refreshToken: null,
               isAuthenticated: false,
               roles: [],
+              hydrated: true,
             });
           }
         } else {
@@ -179,13 +198,11 @@ export const useAuthStore = create<AuthState>()(
             refreshToken: null,
             isAuthenticated: false,
             roles: [],
+            hydrated: true,
           });
         }
       },
 
-      /**
-       * Clears state + cookies and redirects
-       */
       logout: () => {
         clearTokens();
         set(
@@ -194,11 +211,11 @@ export const useAuthStore = create<AuthState>()(
             refreshToken: null,
             isAuthenticated: false,
             roles: [],
+            hydrated: true,
           },
           false,
           "auth/logout"
         );
-        // window.location.href = "/login";
       },
     }),
     { name: "AuthStore" }

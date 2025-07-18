@@ -1,5 +1,5 @@
 export const envCons = {
-  baseUrl: "http://localhost:3000/api/v1",
+  baseUrl: "http://localhost:8000/api/v1",
   frontendUrl: import.meta.env.VITE_PUBLIC_FRONT_API || "https://khid.link",
   backendUrl: import.meta.env.VITE_PUBLIC_API || "https://api.khid.link/api/v1",
   isNodeProd: import.meta.env.NODE_ENV === "production",

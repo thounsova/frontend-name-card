@@ -26,8 +26,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, ChevronDown, Eye, Pen, Trash } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { toast } from "sonner";
 
 // Types
 type ISocialLink = {
@@ -77,41 +78,17 @@ const Pagination: React.FC<PaginationProps> = ({
     const pages: (number | string)[] = [];
 
     if (totalPages <= 7) {
-      // Show all pages if 7 or fewer
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
-      // Show first 3 pages
-      pages.push(1);
-      pages.push(2);
-      pages.push(3);
-
-      if (currentPage > 5) {
-        pages.push("...");
-      }
-
-      // Current page neighbors
+      pages.push(1, 2, 3);
+      if (currentPage > 5) pages.push("...");
       const start = Math.max(4, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
-
-      for (let i = start; i <= end; i++) {
-        if (!pages.includes(i)) {
-          pages.push(i);
-        }
-      }
-
-      if (currentPage < totalPages - 3) {
-        pages.push("...");
-      }
-
-      // Last page
-      if (!pages.includes(totalPages)) {
-        pages.push(totalPages);
-      }
+      for (let i = start; i <= end; i++) if (!pages.includes(i)) pages.push(i);
+      if (currentPage < totalPages - 3) pages.push("...");
+      if (!pages.includes(totalPages)) pages.push(totalPages);
     }
 
-    // Remove duplicates & sort
     return pages
       .filter((v, i, a) => a.indexOf(v) === i)
       .sort((a, b) => {
@@ -165,7 +142,10 @@ const Pagination: React.FC<PaginationProps> = ({
 };
 
 const CardsTable: React.FC = () => {
-  const { GET_CARDS } = requestCard();
+  const { GET_CARDS, DELETE_CARD } = requestCard();
+  const queryClient = useQueryClient();
+
+  // States
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -175,11 +155,13 @@ const CardsTable: React.FC = () => {
     pageSize: 10,
   });
 
+  // Sort and filter values
   const sortField = sorting[0]?.id ?? "created_at";
   const sortOrder = sorting.length === 0 || sorting[0]?.desc ? "DESC" : "ASC";
   const nameFilter = (columnFilters.find((f) => f.id === "full_name")?.value ??
     "") as string;
 
+  // Fetch cards data
   const { data, isLoading } = useQuery({
     queryKey: [
       "cards",
@@ -200,6 +182,19 @@ const CardsTable: React.FC = () => {
       }),
   });
 
+  // Delete card mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => DELETE_CARD(id),
+    onSuccess: () => {
+      toast.success("Card deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["cards"] });
+    },
+    onError: () => {
+      toast.error("Failed to delete card");
+    },
+  });
+
+  // Table columns
   const columns: ColumnDef<ICard>[] = [
     {
       id: "no",
@@ -276,22 +271,12 @@ const CardsTable: React.FC = () => {
             <DropdownMenuContent align="end" className="w-32">
               <Button
                 variant="ghost"
-                className="w-full justify-start"
-                onClick={() => console.log("View", card)}
-              >
-                <Eye className="w-4 h-4 mr-2" /> View
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-yellow-600"
-                onClick={() => console.log("Edit", card)}
-              >
-                <Pen className="w-4 h-4 mr-2" /> Edit
-              </Button>
-              <Button
-                variant="ghost"
                 className="w-full justify-start text-red-600"
-                onClick={() => console.log("Delete", card.id)}
+                onClick={() => {
+                  if (confirm("Are you sure you want to delete this card?")) {
+                    deleteMutation.mutate(card.id);
+                  }
+                }}
               >
                 <Trash className="w-4 h-4 mr-2" /> Delete
               </Button>
@@ -302,6 +287,7 @@ const CardsTable: React.FC = () => {
     },
   ];
 
+  // Setup react-table
   const table = useReactTable({
     data: data?.data ?? [],
     columns,
@@ -325,7 +311,7 @@ const CardsTable: React.FC = () => {
 
   return (
     <div className="flex-1 space-y-6 p-6 md:p-8">
-      {/* Header with Title */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Cards Dashboard</h2>
       </div>
@@ -389,10 +375,7 @@ const CardsTable: React.FC = () => {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   Loading...
                 </TableCell>
               </TableRow>
@@ -401,20 +384,14 @@ const CardsTable: React.FC = () => {
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
@@ -423,7 +400,7 @@ const CardsTable: React.FC = () => {
         </Table>
       </div>
 
-      {/* Footer - Pagination and Rows per Page */}
+      {/* Footer - Pagination & Rows per page */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-4">
         <div className="text-muted-foreground text-sm">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}

@@ -51,13 +51,15 @@ export const requestCard = () => {
     });
   };
 
-  // DELETE CARD
   const DELETE_CARD = async (id: string) => {
     return await request({
-      url: `/api/v1/card/delete-card-by-admin/${id}`, // <-- your API path here
+      url: `/card/delete-card-by-admin/${id}`,
       method: "DELETE",
     });
   };
+
+  // Usage example:
+  // DELETE_CARD("98030ddb-46c0-42da-8909-f9287840ba3f");
 
   return { GET_CARDS, UPDATE_CARD, DELETE_CARD };
 };

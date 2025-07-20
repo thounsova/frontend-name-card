@@ -1,7 +1,6 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useUserStatusDialog } from "@/store/user-status-dialog-store";
 
 export interface User {
@@ -59,9 +58,12 @@ export const RecentActivity = React.memo(
                     </p>
                   </div>
                 </div>
-                <Badge
-                  variant={user.is_active ? "default" : "destructive"}
-                  className="cursor-pointer text-xs px-2 py-1 hover:opacity-80"
+                <span
+                  className={`cursor-pointer text-xs px-2 py-1 rounded-md font-medium transition ${
+                    user.is_active
+                      ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
+                      : "bg-orange-200 text-orange-900 hover:bg-orange-300"
+                  }`}
                   onClick={() => setDialog(user.id, user.is_active)}
                   role="button"
                   tabIndex={0}
@@ -75,7 +77,7 @@ export const RecentActivity = React.memo(
                   }. Click to toggle status.`}
                 >
                   {user.is_active ? "Active" : "Blocked"}
-                </Badge>
+                </span>
               </div>
             ))}
           </div>

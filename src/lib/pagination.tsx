@@ -18,7 +18,6 @@ export const Pagination: React.FC<PaginationProps> = ({
     const delta = 2;
     const pages: (number | string)[] = [];
 
-    // Handle case where totalPages is very small
     if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -29,27 +28,22 @@ export const Pagination: React.FC<PaginationProps> = ({
     const left = Math.max(2, currentPage - delta);
     const right = Math.min(totalPages - 1, currentPage + delta);
 
-    // Always show first page
     pages.push(1);
 
-    // Add ellipsis if there's a gap after page 1
     if (left > 2) {
       pages.push("...");
     }
 
-    // Add middle pages, but avoid duplicating page 1 or last page
     for (let i = left; i <= right; i++) {
       if (i !== 1 && i !== totalPages) {
         pages.push(i);
       }
     }
 
-    // Add ellipsis if there's a gap before last page
     if (right < totalPages - 1) {
       pages.push("...");
     }
 
-    // Always show last page (avoid duplicate)
     if (totalPages > 1) {
       pages.push(totalPages);
     }
@@ -65,7 +59,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       <Button
         variant="outline"
         size="sm"
-        className="cursor-pointer"
+        className="cursor-pointer border-orange-500 text-orange-600 hover:bg-orange-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
       >
@@ -77,7 +71,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         page === "..." ? (
           <span
             key={`ellipsis-${index}`}
-            className="px-2 text-muted-foreground"
+            className="px-2 text-orange-400 select-none"
           >
             ...
           </span>
@@ -86,7 +80,11 @@ export const Pagination: React.FC<PaginationProps> = ({
             key={`page-${page}`}
             size="sm"
             variant={page === currentPage ? "default" : "outline"}
-            className="h-8 w-8 p-0 cursor-pointer"
+            className={`h-8 w-8 p-0 cursor-pointer border-orange-500 text-orange-600 hover:bg-orange-100 ${
+              page === currentPage
+                ? "bg-gradient-to-r from-orange-500 to-orange-700 text-white shadow"
+                : ""
+            }`}
             onClick={() => onPageChange(page as number)}
           >
             {page}
@@ -98,7 +96,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       <Button
         variant="outline"
         size="sm"
-        className="cursor-pointer"
+        className="cursor-pointer border-orange-500 text-orange-600 hover:bg-orange-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
       >

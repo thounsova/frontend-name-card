@@ -42,9 +42,8 @@ export function RevenueChart() {
             />
             <Bar
               dataKey="count"
-              fill="currentColor"
+              fill="#f97316" // Tailwind orange-500 HEX
               radius={[4, 4, 0, 0]}
-              className="fill-primary"
             />
           </BarChart>
         </ResponsiveContainer>

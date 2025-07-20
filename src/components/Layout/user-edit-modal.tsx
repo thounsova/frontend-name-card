@@ -29,7 +29,7 @@ const EditUserModal = () => {
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { mutate: updateUser, isLoading } = useMutation({
+  const { mutate: updateUser, isPending } = useMutation({
     mutationFn: (formData: FormState) => UPDATE_USER_DETAIL(user?.id!, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -63,7 +63,7 @@ const EditUserModal = () => {
   
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!isFormValid || isLoading) return;
+    if (!isFormValid || isPending) return;
     updateUser(form);
   };
 
@@ -105,8 +105,8 @@ const EditUserModal = () => {
             <Button variant="outline" type="button" onClick={closeModal}>
               Cancel
             </Button>
-            <Button disabled={!isFormValid || isLoading} type="submit">
-              {isLoading ? "Saving..." : "Save"}
+            <Button disabled={!isFormValid || isPending} type="submit">
+              {isPending ? "Saving..." : "Save"}
             </Button>
           </div>
         </form>

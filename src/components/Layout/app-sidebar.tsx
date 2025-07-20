@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  Building2,
-  Home,
-  IdCardIcon,
-  Settings,
-  Users2Icon,
+  LayoutDashboard,
+  Users,
+  Contact2,
+  Settings2,
+  Building,
 } from "lucide-react";
 import { useLocation } from "react-router";
 
@@ -22,24 +22,22 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { UserNav } from "../user-nav";
-// import { UserNav } from "@/components/user-nav"
 
 const menuItems = [
   {
     title: "Dashboard",
     url: "/",
-    icon: Home,
-    isActive: true,
+    icon: LayoutDashboard,
   },
   {
     title: "Users",
     url: "/users",
-    icon: Users2Icon,
+    icon: Users,
   },
   {
     title: "Cards",
     url: "/cards",
-    icon: IdCardIcon,
+    icon: Contact2,
   },
 ];
 
@@ -47,24 +45,29 @@ const secondaryItems = [
   {
     title: "Settings",
     url: "#",
-    icon: Settings,
+    icon: Settings2,
   },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
-  const newLocal = <UserNav />;
+
   return (
     <Sidebar>
+      {/* Header */}
       <SidebarHeader className="border-b px-6 py-4">
-        <div className="flex items-center gap-2">
-          <Building2 className="h-6 w-6" />
-          <span className="text-lg font-semibold">Acme Corp</span>
+        <div className="flex items-center gap-2 text-orange-600">
+          <Building className="h-6 w-6" />
+          <span className="text-lg font-semibold">Peel Celr</span>
         </div>
       </SidebarHeader>
+
+      {/* Content */}
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-orange-700">
+            Main Menu
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -72,8 +75,9 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     isActive={location.pathname === item.url}
+                    className="text-orange-600 hover:text-orange-800 hover:bg-orange-100"
                   >
-                    <a href={item.url}>
+                    <a href={item.url} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </a>
@@ -83,13 +87,18 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Secondary Section */}
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    className="text-orange-600 hover:text-orange-800 hover:bg-orange-100"
+                  >
+                    <a href={item.url} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </a>
@@ -100,8 +109,10 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      {/* Footer */}
       <SidebarFooter className="border-t p-4">
-        {newLocal}
+        <UserNav />
       </SidebarFooter>
     </Sidebar>
   );

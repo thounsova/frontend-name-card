@@ -60,7 +60,7 @@ const LoginForm = () => {
 
         // Redirect based on role
         if (roles.includes("admin") || roles.includes("super_admin")) {
-          navigate("/users");
+          navigate("/");
         } else {
           navigate("/login");
         }

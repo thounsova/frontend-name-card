@@ -53,16 +53,21 @@ const LoginForm = () => {
     onSuccess: (data) => {
       const { accessToken, refreshToken, existUser } = data.data;
       const roles = existUser?.roles || [];
-      console.log(existUser, data?.data);
 
       if (accessToken && refreshToken) {
-        setTokens(roles);
+        // Save tokens to cookies
+        Cookies.set(CookieName.ACCESS_TOKEN, accessToken);
+        Cookies.set(CookieName.REFRESH_TOKEN, refreshToken);
 
-        // Redirect based on role
+        // Update Zustand auth store with tokens (this also decodes roles)
+        setTokens(accessToken, refreshToken);
+
+        // Redirect based on roles
         if (roles.includes("admin") || roles.includes("super_admin")) {
           navigate("/");
         } else {
-          navigate("/login");
+          // Redirect to a non-login page if user is not admin, adjust as needed
+          navigate("/dashboard");
         }
       }
     },
@@ -74,12 +79,11 @@ const LoginForm = () => {
   const onSubmit = (data: z.infer<typeof loginSchema>) => {
     loginMutation.mutate(data);
   };
- const access = Cookies.get(CookieName.ACCESS_TOKEN);
-  console.log(access, "dsfafdsaf");
+
   return (
-    <Card className="mx-auto w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+    <Card className="mx-auto w-full mt-24 max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm">
       <CardHeader className="text-center space-y-4 pb-6">
-        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-700 rounded-full flex items-center justify-center shadow-md">
           <LogIn className="w-8 h-8 text-white" />
         </div>
         <div>
@@ -129,7 +133,7 @@ const LoginForm = () => {
 
             <Button
               type="submit"
-              className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-md shadow-md hover:brightness-110 transition-all"
+              className="w-full h-11 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-semibold rounded-md shadow-md hover:brightness-110 transition-all"
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending ? "Signing In..." : "Sign In"}
@@ -139,7 +143,7 @@ const LoginForm = () => {
 
         <div className="text-center text-sm text-gray-600">
           Don’t have an account?{" "}
-          <button className="text-blue-600 hover:underline font-medium">
+          <button className="text-orange-600 hover:underline font-medium">
             Sign up
           </button>
         </div>

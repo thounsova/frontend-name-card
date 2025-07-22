@@ -1,40 +1,31 @@
-// src/components/ProtectedRoute.tsx
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useAuthStore } from "@/store/auth-store";
 
 interface ProtectedRouteProps {
-  roles?: string[]; // Optional RBAC roles
+  roles?: string[];
 }
 
 const ProtectedRoute = ({ roles = [] }: ProtectedRouteProps) => {
   const location = useLocation();
-  const { isAuthenticated, roles: userRoles, accessToken } = useAuthStore();
+  const { isAuthenticated, roles: userRoles, hydrated } = useAuthStore();
 
-  console.log(isAuthenticated, accessToken);
+  if (!hydrated) {
+    // Still loading auth state
+    return <div>Loading...</div>;
+  }
 
   if (!isAuthenticated) {
-    console.log("/login");
-    console.log(accessToken);
-    // return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // ✅ If roles are needed but not yet loaded, skip rendering until ready
-  const needsRoles = roles.length > 0;
-  const rolesLoaded = userRoles.length > 0;
-
-  if (needsRoles && !rolesLoaded) {
-    // 🔁 Skip rendering — just return null silently for now
-    return null;
+  if (roles.length > 0) {
+    const hasPermission = roles.some((role) => userRoles.includes(role));
+    if (!hasPermission) {
+      return <Navigate to="/unauthorized" replace />;
+    }
   }
-  const hasPermission =
-    roles.length === 0 || roles.some((role) => userRoles.includes(role));
-  if (!hasPermission) return <Navigate to="/unauthorized" replace />;
 
-  return (
-    <>
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 };
 
 export default ProtectedRoute;
